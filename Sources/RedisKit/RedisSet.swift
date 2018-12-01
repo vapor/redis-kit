@@ -55,14 +55,12 @@ public struct RedisSet<Element: RedisDataConvertible> {
     /// Returns the total count of elements in the set.
     /// - Note: In most cases it's better to call `RedisSet.allElements`.
     var count: Future<Int> {
-        return connectionPool.requestConnection().flatMap { $0.scard(self.id) }
+        return connectionPool.withConnection { $0.scard(self.id) }
     }
 
     /// A future that resolves all elements in the set - or nil if none found.
     var allElements: Future<[Element]?> {
-        return connectionPool
-            .requestConnection()
-            .flatMap { $0.smembers(self.id) }
+        return connectionPool.withConnection { $0.smembers(self.id) }
             .map {
                 guard let set = $0.array else { return nil }
                 return try set.map { try Element.convertFromRedisData($0) }
@@ -77,7 +75,7 @@ public struct RedisSet<Element: RedisDataConvertible> {
             )
         }
 
-        return connectionPool.requestConnection().flatMap { $0.sismember(self.id, item: data) }
+        return connectionPool.withConnection { $0.sismember(self.id, item: data) }
     }
 
     /// Inserts the provided elements into the set.
@@ -91,9 +89,7 @@ public struct RedisSet<Element: RedisDataConvertible> {
             )
         }
 
-        return connectionPool
-            .requestConnection()
-            .flatMap { $0.sadd(self.id, items: data) }
+        return connectionPool.withConnection { $0.sadd(self.id, items: data) }
             .map { return $0 > 0 }
     }
 
@@ -116,9 +112,7 @@ public struct RedisSet<Element: RedisDataConvertible> {
             )
         }
 
-        return connectionPool
-            .requestConnection()
-            .flatMap { $0.srem(self.id, items: data) }
+        return connectionPool.withConnection { $0.srem(self.id, items: data) }
             .map { return $0 > 0 }
     }
 
@@ -134,17 +128,13 @@ public struct RedisSet<Element: RedisDataConvertible> {
     /// - Important: This resolves `true` only if the set was not empty.
     @discardableResult
     public func removeAll() -> Future<Bool> {
-        return connectionPool
-            .requestConnection()
-            .flatMap { $0.delete(self.id) }
+        return connectionPool.withConnection { $0.delete(self.id) }
             .map { return $0 > 0 }
     }
 
     /// Randomly selects an element and removes it from the set.
     public func popRandom() -> Future<Element?> {
-        return connectionPool
-            .requestConnection()
-            .flatMap { $0.spop(self.id) }
+        return connectionPool.withConnection { $0.spop(self.id) }
             .map {
                 guard !$0.isNull else { return nil }
                 return try Element.convertFromRedisData($0)
@@ -153,9 +143,7 @@ public struct RedisSet<Element: RedisDataConvertible> {
 
     /// Randomly selects a single element.
     public func random() -> Future<Element?> {
-        return connectionPool
-            .requestConnection()
-            .flatMap { $0.srandmember(self.id) }
+        return connectionPool.withConnection { $0.srandmember(self.id) }
             .map { return try Element.convertFromRedisData($0) }
     }
 
@@ -176,9 +164,7 @@ public struct RedisSet<Element: RedisDataConvertible> {
         guard max > 1 else { return random() }
 
         let count = allowDuplicates ? -max : max
-        return connectionPool
-            .requestConnection()
-            .flatMap { $0.srandmember(self.id, max: count) }
+        return connectionPool.withConnection { $0.srandmember(self.id, max: count) }
             .map {
                 guard let results = $0.array else { return nil }
                 return try results.map { try Element.convertFromRedisData($0) }
