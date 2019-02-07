@@ -49,9 +49,9 @@ extension RedisDatabase: Database {
         let bootstrap = ClientBootstrap.makeForRedis(using: eventLoop)
         return bootstrap.connect(host: config.hostname, port: config.port)
             .map { return RedisConnection(channel: $0) }
-            .then { connection in
+            .flatMap { connection in
                 guard let password = self.config.password else {
-                    return self.eventLoop.makeSucceededFuture(result: connection)
+                    return self.eventLoop.makeSucceededFuture(connection)
                 }
 
                 return connection.authorize(with: password)
