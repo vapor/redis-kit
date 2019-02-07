@@ -35,10 +35,17 @@ public final class RedisDatabase {
     public let eventLoop: EventLoop
 
     private let config: Configuration
+    private let driver: RedisDriver
+
+    deinit {
+        try? self.driver.terminate()
+        assert(!self.driver.isRunning, "Redis driver not shutdown properly!")
+    }
 
     public init(config: Configuration, on eventLoop: EventLoop) {
         self.eventLoop = eventLoop
         self.config = config
+        self.driver = RedisDriver(ownershipModel: .external(eventLoop))
     }
 }
 
@@ -46,17 +53,7 @@ extension RedisDatabase: Database {
     public typealias Connection = RedisConnection
 
     public func makeConnection() -> EventLoopFuture<RedisConnection> {
-        let bootstrap = ClientBootstrap.makeForRedis(using: eventLoop)
-        return bootstrap.connect(host: config.hostname, port: config.port)
-            .map { return RedisConnection(channel: $0) }
-            .then { connection in
-                guard let password = self.config.password else {
-                    return self.eventLoop.makeSucceededFuture(result: connection)
-                }
-
-                return connection.authorize(with: password)
-                    .map { _ in return connection }
-            }
+        return driver.makeConnection(hostname: config.hostname, port: config.port, password: config.password)
     }
     
     public func newConnection() -> EventLoopFuture<RedisConnection> {
