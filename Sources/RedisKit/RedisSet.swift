@@ -1,8 +1,4 @@
-import Foundation
-import DatabaseKit
-import NIORedis
-
-extension ConnectionPool where Database == RedisDatabase {
+extension RedisDatabase {
     /// Creates a `RedisSet` for the provided key, that contains the declared type of elements.
     ///
     ///     let idSet = redis.createSetReference(fromKey: "ids", ofType: Int.self)
@@ -22,7 +18,7 @@ extension ConnectionPool where Database == RedisDatabase {
     /// - Parameter fromKey: The key to identify the Set in this `RedisClient`.
     /// - Parameter ofType: The `Collection` type this set represents.
     public func createSetReference<C: Collection>(fromKey key: String, ofType type: C.Type) -> RedisSet<C.Element>
-        where C.Element: RESPConvertible
+        where C.Element: RESPValueConvertible
     {
         return RedisSet(identifier: key, using: self)
     }
@@ -31,32 +27,24 @@ extension ConnectionPool where Database == RedisDatabase {
 /// A reference to a specific Set in a Redis instance.
 ///
 /// https://redis.io/topics/data-types-intro#sets
-public struct RedisSet<Element: RESPConvertible> {
+public struct RedisSet<Element> where Element: RESPValueConvertible {
     private let id: String
-    private let connectionPool: ConnectionPool<RedisDatabase>
-
-    /// - Parameter identifier: The key identifier to reference this set.
-    /// - Parameter owner: The owning `Container` creating this set reference.
-    /// - Throws: Errors from `Container.connectionPool(to:)`
-//    public init(identifier: String, owner container: Container) throws {
-//        self.id = identifier
-//        self.connectionPool = try container.connectionPool(to: .redis)
-//    }
+    private let redis: RedisDatabase
 
     /// - Parameter identifier: The key identifier to reference this set.
     /// - Parameter using: The connection pool to use for interacting with this set reference.
     public init(
         identifier: String,
-        using connectionPool: ConnectionPool<RedisDatabase>
+        using redis: RedisDatabase
     ) {
         self.id = identifier
-        self.connectionPool = connectionPool
+        self.redis = redis
     }
 
     /// Returns the total count of elements in the set.
     /// - Note: In most cases it's better to call `RedisSet.allElements`.
 //    var count: EventLoopFuture<Int> {
-//        return connectionPool.withConnection { $0.scard(self.id) }
+//        return redis.command("SCARD", [RESPValue(stringLiteral: self.id)])
 //    }
 
     /// A EventLoopFuture that resolves all elements in the set - or nil if none found.
@@ -129,8 +117,8 @@ public struct RedisSet<Element: RESPConvertible> {
     /// - Important: This resolves `true` only if the set was not empty.
     @discardableResult
     public func removeAll() -> EventLoopFuture<Bool> {
-        return connectionPool.withConnection { $0.delete(self.id) }
-            .map { return $0 > 0 }
+        return self.redis.command("DEL", [.init(stringLiteral: self.id)])
+            .map { return ($0.string.flatMap(Int.init) ?? 0) > 0 }
     }
 
     /// Randomly selects an element and removes it from the set.

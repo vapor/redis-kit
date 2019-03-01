@@ -2,16 +2,16 @@
 import PackageDescription
 
 let package = Package(
-    name: "RedisKit",
+    name: "redis-kit",
     products: [
         .library(name: "RedisKit", targets: ["RedisKit"])
     ],
     dependencies: [
-        .package(url: "https://github.com/vapor/database-kit.git", .branch("2")),
-        .package(url: "https://github.com/mordil/nio-redis.git", .branch("master"))
+        .package(url: "https://github.com/tanner0101/nio-redis.git", .branch("nio2-ctx-fixes")),
+        .package(url: "https://github.com/vapor/nio-kit.git", .branch("master")),
     ],
     targets: [
-        .target(name: "RedisKit", dependencies: ["NIORedis", "DatabaseKit"]),
+        .target(name: "RedisKit", dependencies: ["NIOKit", "NIORedis"]),
         .testTarget(name: "RedisKitTests", dependencies: ["RedisKit"]),
     ]
 )
