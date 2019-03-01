@@ -7,7 +7,7 @@ let package = Package(
         .library(name: "RedisKit", targets: ["RedisKit"])
     ],
     dependencies: [
-        .package(url: "https://github.com/tanner0101/nio-redis.git", .branch("nio2-ctx-fixes")),
+        .package(url: "https://github.com/mordil/nio-redis.git", .branch("master")),
         .package(url: "https://github.com/vapor/nio-kit.git", .branch("master")),
     ],
     targets: [
