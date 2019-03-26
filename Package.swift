@@ -8,7 +8,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-log.git", .branch("master")),
-        .package(url: "https://github.com/mordil/nio-redis.git", .revision("remove-driver")),
+        .package(url: "https://github.com/mordil/nio-redis.git", .branch("master")),
         .package(url: "https://github.com/vapor/nio-kit.git", .branch("master")),
     ],
     targets: [
