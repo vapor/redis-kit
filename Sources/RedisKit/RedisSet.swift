@@ -1,143 +1,173 @@
-#warning("Re-implement RedisSet")
-//extension RedisDatabase {
-    /// Creates a `RedisSet` for the provided key, that contains the declared type of elements.
+extension RedisClient {
+    /// Creates a `RedisSet` reference to the value stored at `key` with values of `type`.
     ///
-    ///     let idSet = redis.createSetReference(fromKey: "ids", ofType: Int.self)
-    ///     // idSet represents a Set of `Int`.
+    ///     let setOfIDs = client.makeSetReference(key: String, type: Int.self)
+    ///     // setOfIDs represents a Set of `Int`.
     ///
-    /// - Parameter fromKey: The key to identify the Set in this `RedisClient`.
-    /// - Parameter ofType: The type of the elements contained within the set.
-//    public func createSetReference<T>(fromKey key: String, ofType type: T.Type) -> RedisSet<T> {
-//        return RedisSet(identifier: key, using: self)
-//    }
+    /// - Parameters:
+    ///     - key: The Redis key to identify the set.
+    ///     - type: The Swift type representation of the elements in the set.
+    /// - Returns: A `RedisSet` for the key and element type specified.
+    @inlinable
+    public func makeSetReference<T>(key: String, type: T.Type = T.self) -> RedisSet<T> {
+        return RedisSet(identifier: key, client: self)
+    }
 
-    /// Creates a `RedisSet` for the provided key, representing a `Collection` type.
+    /// Creates a `RedisSet` reference to the value stored at `key` with values of `type`.
     ///
-    ///     let idSet = redis.createSetReference(fromKey: "ids", ofType: [Int].self)
-    ///     // idSet represents a Set of `Int`.
+    ///     let setOfIDs = client.makeSetReference(key: String, type: [Int].self)
+    ///     // setOfIDs represents a Set of `Int`.
     ///
-    /// - Parameter fromKey: The key to identify the Set in this `RedisClient`.
-    /// - Parameter ofType: The `Collection` type this set represents.
-//    public func createSetReference<C: Collection>(fromKey key: String, ofType type: C.Type) -> RedisSet<C.Element>
-//        where C.Element: RESPValueConvertible
-//    {
-//        return RedisSet(identifier: key, using: self)
-//    }
-//}
+    /// - Parameters:
+    ///     - key: The Redis key to identify the set.
+    ///     - type: The Swift type representation of the elements in the set.
+    /// - Returns: A `RedisSet` for the key and element type specified.
+    @inlinable
+    public func makeSetReference<C: Collection>(
+        key: String,
+        type: C.Type = C.self
+    ) -> RedisSet<C.Element> {
+        return RedisSet(identifier: key, client: self)
+    }
+}
 
 /// A reference to a specific Set in a Redis instance.
 ///
 /// https://redis.io/topics/data-types-intro#sets
-//public struct RedisSet<Element> where Element: RESPValueConvertible {
-//    private let id: String
-//    private let redis: RedisDatabase
+public struct RedisSet<Element> where Element: RESPValueConvertible {
+    @usableFromInline let id: String
+    @usableFromInline let client: RedisClient
 
-    /// - Parameter identifier: The key identifier to reference this set.
-    /// - Parameter using: The connection pool to use for interacting with this set reference.
-//    public init(
-//        identifier: String,
-//        using redis: RedisDatabase
-//    ) {
-//        self.id = identifier
-//        self.redis = redis
-//    }
+    /// Creates a reference to a specific Redis key that holds a Set type value.
+    /// - Parameters:
+    ///     - identifier: The key identifier to reference this set.
+    ///     - client: The `RedisClient` to use for making calls to Redis.
+    public init(identifier: String, client: RedisClient) {
+        self.id = identifier
+        self.client = client
+    }
 
-    /// Returns the total count of elements in the set.
+    /// Gets the total count of elements in the set.
     /// - Note: In most cases it's better to call `RedisSet.allElements`.
-//    var count: EventLoopFuture<Int> {
-//        return redis.command("SCARD", [RESPValue(stringLiteral: self.id)])
-//    }
+    ///
+    /// See `RedisClient.scard(of:)`
+    @inlinable
+    var count: EventLoopFuture<Int> { return client.scard(of: id) }
 
-    /// A EventLoopFuture that resolves all elements in the set - or nil if none found.
-//    var allElements: EventLoopFuture<[Element]?> {
-//        return connectionPool.withConnection { $0.smembers(self.id) }
-//            .map {
-//                guard let set = $0.array else { return nil }
-//                return try set.map { try Element.convertFromRedisData($0) }
-//            }
-//    }
+    /// Gets all of the elements in the set.
+    ///
+    /// See `RedisClient.smembers(of:)`
+    @inlinable
+    var allElements: EventLoopFuture<[Element]?> {
+        return client.smembers(of: id)
+            .map { $0.compactMap(Element.init) }
+    }
 
     /// Checks if the provided element is currently in the set.
-//    public func contains(_ element: Element) -> EventLoopFuture<Bool> {
-//        guard let data = try? element.convertToRESP() else {
-//            return connectionPool.eventLoop.makeFailedFuture(
-//                RedisError(identifier: "\(#file).\(#function)", reason: "Failed to convert to RedisData: \(element)")
-//            )
-//        }
-//
-//        return connectionPool.withConnection { $0.sismember(self.id, item: data) }
-//    }
+    ///
+    /// See `RedisClient.sismember(_:of:)`
+    /// - Parameter element: The value to search for.
+    /// - Returns: `true` if the value is the set.
+    @inlinable
+    public func contains(_ element: Element) -> EventLoopFuture<Bool> {
+        return client.sismember(element, of: id)
+    }
 
     /// Inserts the provided elements into the set.
     /// - Note: Values already in the set will be ignored.
-    /// - Important: This resolves `true` if at least 1 element was inserted.
-//    @discardableResult
-//    public func insert(_ elements: [Element]) -> EventLoopFuture<Bool> {
-//        guard let data = try? elements.map({ try $0.convertToRESP()() }) else {
-//            return connectionPool.eventLoop.makeFailedFuture(
-//                RedisError(identifier: "\(#file).\(#function)", reason: "Failed to convert to RedisData: \(elements)")
-//            )
-//        }
-//
-//        return connectionPool.withConnection { $0.sadd(self.id, items: data) }
-//            .map { return $0 > 0 }
-//    }
+    ///
+    /// See `RedisClient.sadd(_:to:)`
+    /// - Returns: `true` if at least 1 element was inserted.
+    @inlinable
+    @discardableResult
+    public func insert(_ elements: [Element]) -> EventLoopFuture<Bool> {
+        return client.sadd(elements, to: id)
+            .map { return $0 > 0 }
+    }
 
     /// Inserts the provided elements into the set.
     /// - Note: Values already in the set will be ignored.
-    /// - Important: This resolves `true` if at least 1 element was inserted.
-//    @discardableResult
-//    public func insert(_ elements: Element...) -> EventLoopFuture<Bool> {
-//        return insert(elements)
-//    }
+    ///
+    /// See `RedisClient.sadd(_:to:)`
+    /// - Returns: `true` if at least 1 element was inserted.
+    @inlinable
+    @discardableResult
+    public func insert(_ elements: Element...) -> EventLoopFuture<Bool> {
+        return insert(elements)
+    }
 
-    /// Removes the provided elements from the set.
+    /// Removes the specified elements from the set.
     /// - Note: Values not in the set will be ignored.
-    /// - Important: This resolves `true` if at least 1 element was removed.
-//    @discardableResult
-//    public func remove(_ elements: [Element]) -> EventLoopFuture<Bool> {
-//        guard let data = try? elements.map({ try $0.convertToRESP() }) else {
-//            return connectionPool.eventLoop.makeFailedFuture(
-//                RedisError(identifier: "\(#file).\(#function)", reason: "Failed to convert to RedisData: \(elements)")
-//            )
-//        }
-//
-//        return connectionPool.withConnection { $0.srem(self.id, items: data) }
-//            .map { return $0 > 0 }
-//    }
+    ///
+    /// See `RedisClient.srem`
+    /// - Returns: `true` if at least 1 element was removed.
+    @inlinable
+    @discardableResult
+    public func remove(_ elements: [Element]) -> EventLoopFuture<Bool> {
+        return client.srem(elements, from: id)
+            .map { return $0 > 0 }
+    }
 
-    /// Removes the provided elements from the set.
+    /// Removes the specified elements from the set.
     /// - Note: Values not in the set will be ignored.
-    /// - Important: This resolves `true` if at least 1 element was removed.
-//    @discardableResult
-//    public func remove(_ elements: Element...) -> EventLoopFuture<Bool> {
-//        return remove(elements)
-//    }
+    ///
+    /// See `RedisClient.srem`
+    /// - Returns: `true` if at least 1 element was removed.
+    @inlinable
+    @discardableResult
+    public func remove(_ elements: Element...) -> EventLoopFuture<Bool> {
+        return remove(elements)
+    }
 
-    /// Removes all values within this set.
-    /// - Important: This resolves `true` only if the set was not empty.
-//    @discardableResult
-//    public func removeAll() -> EventLoopFuture<Bool> {
-//        return self.redis.command("DEL", [.init(stringLiteral: self.id)])
-//            .map { return ($0.string.flatMap(Int.init) ?? 0) > 0 }
-//    }
+    /// Removes all values within the set.
+    ///
+    /// See `RedisClient.delete(_:)`
+    /// - Returns: The success of deleting the values stored in the set.
+    @inlinable
+    @discardableResult
+    public func removeAll() -> EventLoopFuture<Bool> {
+        return client.delete([id])
+            .map { $0 == 1 }
+    }
 
     /// Randomly selects an element and removes it from the set.
-//    public func popRandom() -> EventLoopFuture<Element?> {
-//        return connectionPool.withConnection { $0.spop(self.id) }
-//            .flatMap {
-//                guard !$0.isNull else { return nil }
-//                return try Element.convertFromRESP($0)
-//            }
-//    }
+    ///
+    /// See `RedisClient.spop(from:)`
+    /// - Returns: The element that was selected or `nil`.
+    @inlinable
+    public func popRandomElement() -> EventLoopFuture<Element?> {
+        return client.spop(from: id)
+            .map { response in
+                guard response.count > 0 else { return nil }
+                return Element(response[0])
+            }
+    }
+
+    /// Randomly multiple elements and removes them from the set.
+    ///
+    /// See `RedisClient.spop(from:max:)`
+    /// - Parameter count: The max number of elements that should be popped from the set.
+    /// - Returns: A list of elements that were randomly selected.
+    @inlinable
+    public func popRandomElements(max count: Int = 1) -> EventLoopFuture<[Element]> {
+        return client.spop(from: id, max: count)
+            .map { return $0.compactMap(Element.init) }
+    }
 
     /// Randomly selects a single element.
-//    public func random() -> EventLoopFuture<Element?> {
-//        return connectionPool.withConnection { $0.srandmember(self.id) }
-//            .map { return try Element.convertFromRESP($0) }
-//    }
+    ///
+    /// See `RedisClient.srandmember(from:)`
+    /// - Returns: The element that was selected or `nil`.
+    @inlinable
+    public func randomElement() -> EventLoopFuture<Element?> {
+        return client.srandmember(from: id)
+            .map { response in
+                guard response.count > 0 else { return nil }
+                return Element(response[0])
+            }
+    }
 
-    /// Randomly selects random elements, up to the `max` specified.
+    /// Randomly selects multiple elements, up to the `max` specified.
     ///
     ///     // assume `set` has 3 elements
     ///
@@ -146,18 +176,17 @@
     ///     // returns 4 elements, with a duplicate
     ///     set.random(max: 4, allowDuplicates: true)
     ///
-    /// - Parameter max: The max number of elements to pull, as available.
-    /// - Parameter allowDuplicates: Should duplicate elements be picked?
-//    public func random(max: Int = 1, allowDuplicates: Bool = false) -> EventLoopFuture<[Element]?> {
-//        precondition(max > 0, "Max should be a positive value. Use 'allowDuplicates' to handle proper value sign")
-//
-//        guard max > 1 else { return random() }
-//
-//        let count = allowDuplicates ? -max : max
-//        return connectionPool.withConnection { $0.srandmember(self.id, max: count) }
-//            .map {
-//                guard let results = $0.array else { return nil }
-//                return try results.map { try Element.convertFromRESP($0) }
-//            }
-//    }
-//}
+    /// See `RedisClient.srandmember(from:max:)`
+    /// - Parameters:
+    ///     - max: The max number of elements to pull, as available.
+    ///     - allowDuplicates: Should duplicate elements be picked?
+    /// - Returns: The elements randomly selected from the set.
+    @inlinable
+    public func randomElements(max: Int = 1, allowDuplicates: Bool = false) -> EventLoopFuture<[Element]> {
+        assert(max > 0, "Max should be a positive value. Use 'allowDuplicates' to handle proper value sign")
+
+        let count = allowDuplicates ? -max : max
+        return client.srandmember(from: id, max: count)
+            .map { $0.compactMap(Element.init) }
+    }
+}
