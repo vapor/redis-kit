@@ -1,7 +1,7 @@
 extension RedisClient {
-    /// Creates a `RedisSet` reference to the value stored at `key` with values of `type`.
+    /// Creates a `RedisSet` referencing a set stored in Redis at `key` with values of `type`.
     ///
-    ///     let setOfIDs = client.makeSetReference(key: String, type: Int.self)
+    ///     let setOfIDs = client.makeRedisSet(key: String, type: Int.self)
     ///     // setOfIDs represents a Set of `Int`.
     ///
     /// - Parameters:
@@ -9,24 +9,7 @@ extension RedisClient {
     ///     - type: The Swift type representation of the elements in the set.
     /// - Returns: A `RedisSet` for the key and element type specified.
     @inlinable
-    public func makeSetReference<T>(key: String, type: T.Type = T.self) -> RedisSet<T> {
-        return RedisSet(identifier: key, client: self)
-    }
-
-    /// Creates a `RedisSet` reference to the value stored at `key` with values of `type`.
-    ///
-    ///     let setOfIDs = client.makeSetReference(key: String, type: [Int].self)
-    ///     // setOfIDs represents a Set of `Int`.
-    ///
-    /// - Parameters:
-    ///     - key: The Redis key to identify the set.
-    ///     - type: The Swift type representation of the elements in the set.
-    /// - Returns: A `RedisSet` for the key and element type specified.
-    @inlinable
-    public func makeSetReference<C: Collection>(
-        key: String,
-        type: C.Type = C.self
-    ) -> RedisSet<C.Element> {
+    public func makeRedisSet<T>(key: String, type: T.Type = T.self) -> RedisSet<T> {
         return RedisSet(identifier: key, client: self)
     }
 }
@@ -35,8 +18,10 @@ extension RedisClient {
 ///
 /// https://redis.io/topics/data-types-intro#sets
 public struct RedisSet<Element> where Element: RESPValueConvertible {
-    @usableFromInline let id: String
-    @usableFromInline let client: RedisClient
+    @usableFromInline
+    let id: String
+    @usableFromInline
+    let client: RedisClient
 
     /// Creates a reference to a specific Redis key that holds a Set type value.
     /// - Parameters:
