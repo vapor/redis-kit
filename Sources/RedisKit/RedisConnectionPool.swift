@@ -1,5 +1,5 @@
-import NIOKit
-import NIORedis
+import AsyncKit
+import RedisNIO
 
 extension RedisConnection: ConnectionPoolItem {
     /// See `ConnectionPoolItem.isClosed`
@@ -18,18 +18,5 @@ extension ConnectionPool: RedisClient where Source.Connection: RedisConnection {
         with arguments: [RESPValueConvertible]
     ) -> EventLoopFuture<RESPValue> {
         return self.withConnection { $0.send(command: command, with: arguments) }
-    }
-}
-
-extension ConnectionPool where Source.Connection: RedisConnection {
-    /// Sources a connection and forwards the command to the `RedisConnection` instance.
-    ///
-    /// See `RedisConnection.makePipeline()`
-    public func makePipeline() -> EventLoopFuture<RedisPipeline> {
-        return self.withConnection {
-            return self.eventLoop.makeSucceededFuture(
-                $0.makePipeline()
-            )
-        }
     }
 }

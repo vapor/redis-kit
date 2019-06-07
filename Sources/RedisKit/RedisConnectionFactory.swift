@@ -1,7 +1,7 @@
+import AsyncKit
 import struct Foundation.UUID
 import Logging
 import NIO
-import NIOKit
 
 private let loggingKeyID = "RedisConnectionFactory"
 
@@ -52,18 +52,22 @@ extension RedisConnectionFactory: ConnectionPoolSource {
         to address: SocketAddress,
         with clientLogger: Logger?
     ) -> EventLoopFuture<RedisConnection> {
-        logger.debug("Making a NIORedisClient.")
+        logger.debug("Making a RedisConnection.")
 
         let futureClient: EventLoopFuture<RedisConnection>
         if let l = clientLogger {
-            futureClient = RedisConnection.connect(
+            futureClient = Redis.makeConnection(
                 to: address,
-                with: config.password,
-                on: eventLoop,
+                using: eventLoop,
+                password: config.password,
                 logger: l
             )
         } else {
-            futureClient = RedisConnection.connect(to: address, with: config.password, on: eventLoop)
+            futureClient = Redis.makeConnection(
+                to: address,
+                using: eventLoop,
+                password: config.password
+            )
         }
 
         return futureClient

@@ -1,2 +1,2 @@
-@_exported import NIOKit
-@_exported import NIORedis
+@_exported import AsyncKit
+@_exported import RedisNIO

@@ -7,12 +7,12 @@ let package = Package(
         .library(name: "RedisKit", targets: ["RedisKit"])
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-log.git", .branch("master")),
-        .package(url: "https://github.com/mordil/nio-redis.git", .branch("master")),
-        .package(url: "https://github.com/vapor/nio-kit.git", .branch("master")),
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
+        .package(url: "https://gitlab.com/mordil/swift-redis-nio-client.git", from: "1.0.0-alpha.1"),
+        .package(url: "https://github.com/vapor/async-kit.git", from: "1.0.0-alpha.1"),
     ],
     targets: [
-        .target(name: "RedisKit", dependencies: ["NIOKit", "NIORedis", "Logging"]),
+        .target(name: "RedisKit", dependencies: ["AsyncKit", "RedisNIO", "Logging"]),
         .testTarget(name: "RedisKitTests", dependencies: ["RedisKit"]),
     ]
 )
