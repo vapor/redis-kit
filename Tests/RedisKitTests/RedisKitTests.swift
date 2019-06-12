@@ -21,11 +21,11 @@ final class RedisKitTests: XCTestCase {
         #if os(Linux)
         hostname = "redis"
         #else
-        hostname = "127.0.0.1"
+        hostname = "localhost"
         #endif
 
         let source = RedisConnectionSource(config: .init(
-            hostname: "localhost",
+            hostname: hostname,
             port: 6379,
             password: nil,
             database: nil,
