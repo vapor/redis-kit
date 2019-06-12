@@ -1,17 +1,18 @@
 version: 2
 
 jobs:
-  linux:
+  11-bionic:
     docker:
-      - image: swift:5.0
+      - image: swift:5.0-bionic
       - image: redis:5
+        name: redis
     steps:
       - checkout
       - run: swift build
       - run: swift test
-  linux-release:
+  bionic-release:
     docker:
-      - image: swift:5.0
+      - image: swift:5.0-bionic
     steps:
       - checkout
       - run: swift build -c release
@@ -19,5 +20,5 @@ workflows:
   version: 2
   tests:
     jobs:
-      - linux
-      - linux-release
+      - 11-bionic
+      - bionic-release
