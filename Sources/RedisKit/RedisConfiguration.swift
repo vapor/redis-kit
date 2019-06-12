@@ -15,7 +15,7 @@ public struct RedisConfiguration {
     
     public init(
         hostname: String = "localhost",
-        port: Int = 6379,
+        port: Int = RedisConnection.defaultPort,
         password: String? = nil,
         database: Int? = nil,
         logger: Logger? = nil
@@ -32,7 +32,7 @@ public struct RedisConfiguration {
             return nil
         }
         self.hostname = url.host ?? "localhost"
-        self.port = url.port ?? 6379
+        self.port = url.port ?? RedisConnection.defaultPort
         self.password = url.password
         self.database = Int(url.path)
         self.logger = logger
