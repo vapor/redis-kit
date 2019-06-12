@@ -3,5 +3,6 @@ import XCTest
 import RedisKitTests
 
 var tests = [XCTestCaseEntry]()
-tests += RedisKitTests.allTests()
+tests += RedisKitTests.__allTests()
+
 XCTMain(tests)

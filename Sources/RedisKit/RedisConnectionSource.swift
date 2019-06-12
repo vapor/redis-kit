@@ -5,7 +5,7 @@ import NIO
 
 private let loggingKeyID = "RedisConnectionFactory"
 
-public final class RedisConnectionFactory {
+public final class RedisConnectionSource {
     /// See `ConnectionPoolSource.eventLoop`
     public let eventLoop: EventLoop
 
@@ -15,7 +15,7 @@ public final class RedisConnectionFactory {
     public init(
         config: RedisConfiguration,
         eventLoop: EventLoop,
-        logger: Logger = Logger(label: "RedisConnectionFactory")
+        logger: Logger = Logger(label: "codes.vapor.redis-kit")
     ) {
         self.eventLoop = eventLoop
         self.config = config
@@ -26,7 +26,7 @@ public final class RedisConnectionFactory {
     }
 }
 
-extension RedisConnectionFactory: ConnectionPoolSource {
+extension RedisConnectionSource: ConnectionPoolSource {
     /// Creates a new `RedisConnection` using the `RedisConfiguration` provided during factory init.
     /// - Note: The client will receive a logger based on the one in the configuration, with an
     ///     additional metadata key "RedisConnectionFactory" that associates the connection instance
@@ -38,21 +38,21 @@ extension RedisConnectionFactory: ConnectionPoolSource {
         do {
             address = try SocketAddress.makeAddressResolvingHost(config.hostname, port: config.port)
         } catch {
-            logger.error("Failed to resolve address for config: \(config)")
-            return eventLoop.makeFailedFuture(error)
+            self.logger.error("Failed to resolve address for config: \(config)")
+            return self.eventLoop.makeFailedFuture(error)
         }
 
-        var clientLogger = config.logger
-        clientLogger?[metadataKey: loggingKeyID] = logger[metadataKey: loggingKeyID]
+        var clientLogger = self.config.logger
+        clientLogger?[metadataKey: loggingKeyID] = self.logger[metadataKey: loggingKeyID]
 
-        return makeConnection(to: address, with: clientLogger)
+        return self.makeConnection(to: address, with: clientLogger)
     }
 
     private func makeConnection(
         to address: SocketAddress,
         with clientLogger: Logger?
     ) -> EventLoopFuture<RedisConnection> {
-        logger.debug("Making a RedisConnection.")
+        self.logger.debug("Making a RedisConnection.")
 
         let futureClient: EventLoopFuture<RedisConnection>
         if let l = clientLogger {
@@ -76,7 +76,7 @@ extension RedisConnectionFactory: ConnectionPoolSource {
                     return self.eventLoop.makeSucceededFuture(client)
                 }
 
-                self.logger.debug("Selecting Redis database \(index) specified by config.")
+                self.logger.debug("Selecting Redis database \(index) specified by config")
 
                 return client.select(database: index)
                     .map { return client }
