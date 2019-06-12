@@ -5,7 +5,7 @@ jobs:
     docker:
       - image: swift:5.0-bionic
       - image: redis:5
-        name: psql
+        name: redis
         environment:
           POSTGRES_USER: vapor_username
           POSTGRES_DB: vapor_database

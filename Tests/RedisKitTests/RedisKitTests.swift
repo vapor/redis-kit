@@ -16,6 +16,14 @@ final class RedisKitTests: XCTestCase {
 
     override func setUp() {
         self.eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+
+        let hostname: String
+        #if os(Linux)
+        hostname = "redis"
+        #else
+        hostname = "127.0.0.1"
+        #endif
+
         let source = RedisConnectionSource(config: .init(
             hostname: "localhost",
             port: 6379,
