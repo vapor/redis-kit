@@ -6,6 +6,7 @@ extension RedisKitTests {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__RedisKitTests = [
+        ("testIsClosed", testIsClosed),
         ("testVersion", testVersion),
     ]
 }

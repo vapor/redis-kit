@@ -1,4 +1,4 @@
-#warning("Re-implement RedisSet")
+// TODO: Re-implement RedisSet
 //extension RedisDatabase {
     /// Creates a `RedisSet` for the provided key, that contains the declared type of elements.
     ///

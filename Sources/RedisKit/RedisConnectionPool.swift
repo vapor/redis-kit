@@ -3,7 +3,7 @@ import RedisNIO
 
 extension RedisConnection: ConnectionPoolItem {
     /// See `ConnectionPoolItem.isClosed`
-    public var isClosed: Bool { return self.isConnected }
+    public var isClosed: Bool { return !self.isConnected }
 }
 
 extension ConnectionPool: RedisClient where Source.Connection: RedisConnection {
