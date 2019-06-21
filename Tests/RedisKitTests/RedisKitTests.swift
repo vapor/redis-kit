@@ -7,6 +7,13 @@ final class RedisKitTests: XCTestCase {
         XCTAssert(response.string?.contains("connected_clients:1") == true, "unexpected response")
     }
 
+    func testIsClosed() throws {
+        let _: Void = try self.connectionPool.withConnection { connection in
+            XCTAssertEqual(connection.isClosed, false)
+            return connection.eventLoop.makeSucceededFuture(())
+        }.wait()
+    }
+
     var client: RedisClient {
         return self.connectionPool
     }
