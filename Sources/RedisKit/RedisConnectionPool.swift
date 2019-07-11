@@ -1,5 +1,5 @@
 import AsyncKit
-import RedisNIO
+import RediStack
 
 extension RedisConnection: ConnectionPoolItem {
     /// See `ConnectionPoolItem.isClosed`
@@ -7,15 +7,15 @@ extension RedisConnection: ConnectionPoolItem {
 }
 
 extension ConnectionPool: RedisClient where Source.Connection: RedisConnection {
-    /// See `RedisClient.eventLoop`
+    /// See `RediStack.RedisClient.eventLoop`
     public var eventLoop: EventLoop { return self.source.eventLoop }
 
-    /// Sources a connection and forwards the command to the `RedisClient` instance.
+    /// Sources a connection and forwards the command to the `RediStack.RedisClient` instance.
     ///
-    /// See `RedisClient.send(command:with:)`
+    /// See `RediStack.RedisClient.send(command:with:)`
     public func send(
         command: String,
-        with arguments: [RESPValueConvertible]
+        with arguments: [RESPValue]
     ) -> EventLoopFuture<RESPValue> {
         return self.withConnection { $0.send(command: command, with: arguments) }
     }

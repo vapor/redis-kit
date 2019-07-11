@@ -27,7 +27,7 @@ public final class RedisConnectionSource {
 }
 
 extension RedisConnectionSource: ConnectionPoolSource {
-    /// Creates a new `RedisConnection` using the `RedisConfiguration` provided during factory init.
+    /// Creates a new `RediStack.RedisConnection` using the `RedisConfiguration` provided during factory init.
     /// - Note: The client will receive a logger based on the one in the configuration, with an
     ///     additional metadata key "RedisConnectionFactory" that associates the connection instance
     ///     with the factory that created it.
@@ -56,18 +56,9 @@ extension RedisConnectionSource: ConnectionPoolSource {
 
         let futureClient: EventLoopFuture<RedisConnection>
         if let l = clientLogger {
-            futureClient = Redis.makeConnection(
-                to: address,
-                using: eventLoop,
-                password: config.password,
-                logger: l
-            )
+            futureClient = RedisConnection.connect(to: address, on: eventLoop, password: config.password, logger: l)
         } else {
-            futureClient = Redis.makeConnection(
-                to: address,
-                using: eventLoop,
-                password: config.password
-            )
+            futureClient = RedisConnection.connect(to: address, on: eventLoop, password: config.password)
         }
 
         return futureClient

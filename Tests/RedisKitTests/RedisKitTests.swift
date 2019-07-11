@@ -14,7 +14,7 @@ final class RedisKitTests: XCTestCase {
         }.wait()
     }
 
-    var client: RedisClient {
+    var client: RediStack.RedisClient {
         return self.connectionPool
     }
 
