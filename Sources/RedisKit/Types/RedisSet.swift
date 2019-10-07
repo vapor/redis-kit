@@ -90,7 +90,6 @@ extension RedisSet {
     /// See `RediStack.RedisClient.sadd(_:to:)`
     /// - Parameter newMember: An element to insert into the set.
     /// - Returns: A `NIO.EventLoopFuture<Bool>` resolving `true` if `newMember` was inserted into the set; otherwise, `false`.
-    @discardableResult
     public func insert(_ newMember: Element) -> EventLoopFuture<Bool> {
         return self.insert(contentsOf: [newMember])
             .map { $0 == 1 }
@@ -101,7 +100,6 @@ extension RedisSet {
     /// See `RediStack.RedisClient.sadd(_:to:)`
     /// - Parameter newMembers: The elements to insert into the set.
     /// - Returns: A `NIO.EventLoopFuture<Int>` resolving the number of elements inserted into the set.
-    @discardableResult
     public func insert(contentsOf newMembers: [Element]) -> EventLoopFuture<Int> {
         guard newMembers.count > 0 else { return self.client.eventLoop.makeSucceededFuture(0) }
         return self.client.sadd(newMembers, to: self.id)
@@ -118,7 +116,6 @@ extension RedisSet {
     ///     - member: The element in the set to move.
     ///     - other:A set of the same type as the current set.
     /// - Returns: A `NIO.EventLoopFuture<Bool>` resolving `true` if the element was moved; otherwise, `false`.
-    @discardableResult
     public func move(_ member: Element, to other: RedisSet<Element>) -> EventLoopFuture<Bool> {
         return self.client.smove(member, from: self.id, to: other.id)
     }
@@ -147,7 +144,6 @@ extension RedisSet {
     ///
     /// See `RediStack.RedisClient.delete(_:)`
     /// - Returns: A `NIO.EventLoopFuture<Bool>` resolving `true` if all elements were removed; otherwise, `false`.
-    @discardableResult
     public func removeAll() -> EventLoopFuture<Bool> {
         return self.client.delete([self.id])
             .map { $0 == 1 }
@@ -165,7 +161,6 @@ extension RedisSet {
     /// If the conversion fails, the resolved value will be `nil`.
     ///
     /// - Returns: A `NIO.EventLoopFuture<Element?>` resolving a randomly popped element from the set, or `nil` if the set was empty.
-    @discardableResult
     public func popRandomElement() -> EventLoopFuture<Element?> {
         return self.client.spop(from: self.id)
             .map { response in
@@ -182,7 +177,6 @@ extension RedisSet {
     /// `nil` values from the conversion will be filtered from the resolved result.
     /// - Parameter count: The max number of elements that should be popped from the set.
     /// - Returns: A `NIO.EventLoopFuture<[Element]>` resolving between `0` and `max` count of random elements in the set.
-    @discardableResult
     public func popRandomElements(max count: Int) -> EventLoopFuture<[Element]> {
         guard count >= 0 else { return self.client.eventLoop.makeFailedFuture(RedisError.indexOutOfRange) }
         guard count >= 1 else { return self.client.eventLoop.makeSucceededFuture([]) }
