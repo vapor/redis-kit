@@ -14,6 +14,23 @@ final class RedisKitTests: XCTestCase {
         }.wait()
     }
 
+    func testStruct() throws {
+        struct Hello: Codable {
+            var message: String
+            var array: [Int]
+            var dict: [String: Bool]
+        }
+        let hello = Hello(message: "world", array: [1, 2, 3], dict: ["yes": true, "false": false])
+        try self.client.jsonSet("hello", to: hello).wait()
+        let get = try self.client.jsonGet("hello", as: Hello.self).wait()
+        XCTAssertEqual(get?.message, "world")
+        XCTAssertEqual(get?.array.first, 1)
+        XCTAssertEqual(get?.array.last, 3)
+        XCTAssertEqual(get?.dict["yes"], true)
+        XCTAssertEqual(get?.dict["false"], false)
+        let _ = try self.client.delete(["hello"]).wait()
+    }
+
     var client: RediStack.RedisClient {
         return self.connectionPool
     }

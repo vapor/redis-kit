@@ -8,6 +8,7 @@ extension RedisKitTests {
     static let __allTests__RedisKitTests = [
         ("testIsClosed", testIsClosed),
         ("testVersion", testVersion),
+        ("testStruct", testStruct)
     ]
 }
 
