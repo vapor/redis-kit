@@ -21,8 +21,8 @@ final class RedisKitTests: XCTestCase {
             var dict: [String: Bool]
         }
         let hello = Hello(message: "world", array: [1, 2, 3], dict: ["yes": true, "false": false])
-        try self.client.jsonSet("hello", to: hello).wait()
-        let get = try self.client.jsonGet("hello", as: Hello.self).wait()
+        try self.client.set("hello", toJSON: hello).wait()
+        let get = try self.client.get("hello", asJSON: Hello.self).wait()
         XCTAssertEqual(get?.message, "world")
         XCTAssertEqual(get?.array.first, 1)
         XCTAssertEqual(get?.array.last, 3)
