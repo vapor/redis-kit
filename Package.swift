@@ -13,6 +13,6 @@ let package = Package(
     ],
     targets: [
         .target(name: "RedisKit", dependencies: ["AsyncKit", "RediStack", "Logging"]),
-        .testTarget(name: "RedisKitTests", dependencies: ["RedisKit"]),
+        .testTarget(name: "RedisKitTests", dependencies: ["RedisKit", "RediStackTestUtils"]),
     ]
 )
