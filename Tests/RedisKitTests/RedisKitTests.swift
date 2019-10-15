@@ -76,6 +76,7 @@ final class RedisKitTests: XCTestCase {
         try! eventLoopGroup.syncShutdownGracefully()
     }
 
+    #warning("needs implementation")
     func testPubSubSingleChannel() throws {
         /*
         let futureExpectation = expectation(description: "Subscriber should receive message")
@@ -104,6 +105,7 @@ final class RedisKitTests: XCTestCase {
         waitForExpectations(timeout: defaultTimeout)*/
     }
 
+    #warning("needs implementation")
     func testPubSubMultiChannel() throws {
         /*
         let expectedChannel1Msg = "Stuff and things"
