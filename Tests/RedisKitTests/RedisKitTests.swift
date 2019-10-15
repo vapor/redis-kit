@@ -22,6 +22,60 @@ final class RedisKitTests: XCTestCase {
         XCTAssertNil(try self.client.get("hello", as: String.self).wait())
     }
 
+    func testSelect() throws {
+        let _ = try self.client.select(database: 2).wait()
+        try self.client.set("hello", to: "world").wait()
+        let get = try self.client.get("hello", as: String.self).wait()
+        XCTAssertEqual(get, "world")
+
+        let _ = try self.client.select(database: 0).wait()
+        XCTAssertNil(try self.client.get("hello", as: String.self).wait())
+
+        let _ = try self.client.select(database: 2).wait()
+        let reget = try self.client.get("hello", as: String.self).wait()
+        XCTAssertEqual(reget, "world")
+
+        let _ = try self.client.delete(["hello"]).wait()
+        XCTAssertNil(try self.client.get("hello", as: String.self).wait())
+    }
+
+    func testSelectViaConfig() throws {
+        try self.connectionPool.close().wait()
+        self.eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+
+        let hostname: String
+        #if os(Linux)
+        hostname = "redis"
+        #else
+        hostname = "localhost"
+        #endif
+
+        let source = RedisConnectionSource(config: .init(
+            hostname: hostname,
+            port: 6379,
+            password: nil,
+            database: 2,
+            logger: nil
+        ), eventLoop: self.eventLoopGroup.next())
+        self.connectionPool = .init(config: .init(maxConnections: 4), source: source)
+
+        try self.client.set("hello", to: "world").wait()
+        let get = try self.client.get("hello", as: String.self).wait()
+        XCTAssertEqual(get, "world")
+
+        let _ = try self.client.select(database: 0).wait()
+        XCTAssertNil(try self.client.get("hello", as: String.self).wait())
+
+        let _ = try self.client.select(database: 2).wait()
+        let reget = try self.client.get("hello", as: String.self).wait()
+        XCTAssertEqual(reget, "world")
+
+        let _ = try self.client.delete(["hello"]).wait()
+        XCTAssertNil(try self.client.get("hello", as: String.self).wait())
+
+        try! eventLoopGroup.syncShutdownGracefully()
+    }
+
     func testPubSubSingleChannel() throws {
         /*
         let futureExpectation = expectation(description: "Subscriber should receive message")
@@ -188,8 +242,6 @@ final class RedisKitTests: XCTestCase {
 
         let _ = try self.client.delete(["hash"]).wait()
     }
-
-
 
     func testListCommands() throws {
         let _ = try self.client.send(command: "FLUSHALL").wait()
