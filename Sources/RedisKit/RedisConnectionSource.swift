@@ -6,19 +6,14 @@ import NIO
 private let loggingKeyID = "RedisConnectionFactory"
 
 public final class RedisConnectionSource {
-    /// See `ConnectionPoolSource.eventLoop`
-    public let eventLoop: EventLoop
-
-    private let config: RedisConfiguration
+    private let configuration: RedisConfiguration
     private var logger: Logger
 
     public init(
-        config: RedisConfiguration,
-        eventLoop: EventLoop,
+        configuration: RedisConfiguration,
         logger: Logger = Logger(label: "codes.vapor.redis-kit")
     ) {
-        self.eventLoop = eventLoop
-        self.config = config
+        self.configuration = configuration
         self.logger = logger
 
         self.logger[metadataKey: loggingKeyID] = "\(UUID())"
@@ -33,38 +28,39 @@ extension RedisConnectionSource: ConnectionPoolSource {
     ///     with the factory that created it.
     ///
     /// See `ConnectionPoolSource`
-    public func makeConnection() -> EventLoopFuture<RedisConnection> {
+    public func makeConnection(on eventLoop: EventLoop) -> EventLoopFuture<RedisConnection> {
         let address: SocketAddress
         do {
-            address = try SocketAddress.makeAddressResolvingHost(config.hostname, port: config.port)
+            address = try SocketAddress.makeAddressResolvingHost(self.configuration.hostname, port: self.configuration.port)
         } catch {
-            self.logger.error("Failed to resolve address for config: \(config)")
-            return self.eventLoop.makeFailedFuture(error)
+            self.logger.error("Failed to resolve address for config: \(self.configuration)")
+            return eventLoop.makeFailedFuture(error)
         }
 
-        var clientLogger = self.config.logger
+        var clientLogger = self.configuration.logger
         clientLogger?[metadataKey: loggingKeyID] = self.logger[metadataKey: loggingKeyID]
 
-        return self.makeConnection(to: address, with: clientLogger)
+        return self.makeConnection(to: address, with: clientLogger, on: eventLoop)
     }
 
     private func makeConnection(
         to address: SocketAddress,
-        with clientLogger: Logger?
+        with clientLogger: Logger?,
+        on eventLoop: EventLoop
     ) -> EventLoopFuture<RedisConnection> {
         self.logger.debug("Making a RedisConnection.")
 
         let futureClient: EventLoopFuture<RedisConnection>
         if let l = clientLogger {
-            futureClient = RedisConnection.connect(to: address, on: eventLoop, password: config.password, logger: l)
+            futureClient = RedisConnection.connect(to: address, on: eventLoop, password: self.configuration.password, logger: l)
         } else {
-            futureClient = RedisConnection.connect(to: address, on: eventLoop, password: config.password)
+            futureClient = RedisConnection.connect(to: address, on: eventLoop, password: self.configuration.password)
         }
 
         return futureClient
             .flatMap { client in
-                guard let index = self.config.database else {
-                    return self.eventLoop.makeSucceededFuture(client)
+                guard let index = self.configuration.database else {
+                    return eventLoop.makeSucceededFuture(client)
                 }
 
                 self.logger.debug("Selecting Redis database \(index) specified by config")

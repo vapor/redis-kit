@@ -48,14 +48,14 @@ final class RedisKitTests: XCTestCase {
         hostname = "localhost"
         #endif
 
-        let source = RedisConnectionSource(config: .init(
+        let source = RedisConnectionSource(configuration: .init(
             hostname: hostname,
             port: 6379,
             password: nil,
             database: nil,
             logger: nil
-        ), eventLoop: self.eventLoopGroup.next())
-        self.connectionPool = .init(config: .init(maxConnections: 4), source: source)
+        ))
+        self.connectionPool = .init(configuration: .init(maxConnections: 4), source: source, on: self.eventLoopGroup)
     }
 
     override func tearDown() {
