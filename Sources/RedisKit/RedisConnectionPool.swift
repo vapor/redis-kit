@@ -8,7 +8,7 @@ extension RedisConnection: ConnectionPoolItem {
 
 extension ConnectionPool: RedisClient where Source.Connection: RedisConnection {
     /// See `RediStack.RedisClient.eventLoop`
-    public var eventLoop: EventLoop { return self.source.eventLoop }
+    public var eventLoop: EventLoop { self.eventLoopGroup.next() }
 
     /// Sources a connection and forwards the command to the `RediStack.RedisClient` instance.
     ///
