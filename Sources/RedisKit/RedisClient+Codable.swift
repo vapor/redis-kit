@@ -2,24 +2,9 @@ import RediStack
 import AsyncKit
 import Foundation
 
+// MARK: JSON
+
 extension RedisClient {
-    /// Gets key as a `RedisDataConvertible` type.
-    public func get<D>(_ key: String, as type: D.Type) -> EventLoopFuture<D?> where D: RESPValueConvertible {
-        return get(key).map { value in
-            guard let value = value else {
-                return nil
-            }
-            if value.isEmpty {
-                return nil
-            } else {
-                let value = RESPValue(value)
-                return D(fromRESP: value)
-            }
-        }
-    }
-
-    // MARK: JSON
-
     /// Gets key as a decodable type.
     public func get<D>(_ key: String, asJSON type: D.Type) -> EventLoopFuture<D?> where D: Decodable {
         return get(key, as: Data.self).flatMapThrowing { data in
