@@ -28,7 +28,7 @@ extension RedisConnectionSource: ConnectionPoolSource {
     ///     with the factory that created it.
     ///
     /// See `ConnectionPoolSource`
-    public func makeConnection(on eventLoop: EventLoop) -> EventLoopFuture<RedisConnection> {
+    public func makeConnection(logger: Logger, on eventLoop: EventLoop) -> EventLoopFuture<RedisConnection> {
         let address: SocketAddress
         do {
             address = try SocketAddress.makeAddressResolvingHost(self.configuration.hostname, port: self.configuration.port)

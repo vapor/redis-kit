@@ -9,7 +9,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
         .package(url: "https://gitlab.com/mordil/swift-redi-stack.git", from: "1.0.0-alpha.5"),
-        .package(url: "https://github.com/vapor/async-kit.git", from: "1.0.0-beta"),
+        .package(url: "https://github.com/vapor/async-kit.git", .branch("master")),
     ],
     targets: [
         .target(name: "RedisKit", dependencies: ["AsyncKit", "RediStack", "Logging"]),
