@@ -32,10 +32,10 @@ final class RedisKitTests: XCTestCase {
     }
 
     var client: RediStack.RedisClient {
-        return self.connectionPool
+        return self.connectionPool.pool(for: self.eventLoopGroup.next()).client()
     }
 
-    var connectionPool: ConnectionPool<RedisConnectionSource>!
+    var connectionPool: EventLoopGroupConnectionPool<RedisConnectionSource>!
     var eventLoopGroup: EventLoopGroup!
 
     override func setUp() {
@@ -55,7 +55,7 @@ final class RedisKitTests: XCTestCase {
             database: nil,
             logger: nil
         ))
-        self.connectionPool = .init(configuration: .init(maxConnections: 4), source: source, on: self.eventLoopGroup)
+        self.connectionPool = .init(source: source, on: self.eventLoopGroup)
     }
 
     override func tearDown() {
