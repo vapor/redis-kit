@@ -13,7 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - run: swift test --enable-test-discovery
+    - run: swift test --enable-test-discovery --sanitize=thread
+      env:
+        REDIS_HOSTNAME: redis
   bionic:
     container: 
       image: vapor/swift:5.1-bionic
@@ -25,16 +27,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - run: swift test --enable-test-discovery
-  thread:
-    container: 
-      image: vapor/swift:5.1-bionic
-    services:
-      redis:
-        image: redis
-        ports:
-          - 6379:6379
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v1
     - run: swift test --enable-test-discovery --sanitize=thread
+      env:
+        REDIS_HOSTNAME: redis
