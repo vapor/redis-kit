@@ -32,30 +32,23 @@ final class RedisKitTests: XCTestCase {
     }
 
     var client: RediStack.RedisClient {
-        return self.connectionPool
+        return self.connectionPool.pool(for: self.eventLoopGroup.next()).client()
     }
 
-    var connectionPool: ConnectionPool<RedisConnectionSource>!
+    var connectionPool: EventLoopGroupConnectionPool<RedisConnectionSource>!
     var eventLoopGroup: EventLoopGroup!
 
     override func setUp() {
         self.eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
 
-        let hostname: String
-        #if os(Linux)
-        hostname = "redis"
-        #else
-        hostname = "localhost"
-        #endif
-
         let source = RedisConnectionSource(configuration: .init(
-            hostname: hostname,
+            hostname: ProcessInfo.processInfo.environment["REDIS_HOSTNAME"] ?? "localhost",
             port: 6379,
             password: nil,
             database: nil,
             logger: nil
         ))
-        self.connectionPool = .init(configuration: .init(maxConnections: 4), source: source, on: self.eventLoopGroup)
+        self.connectionPool = .init(source: source, on: self.eventLoopGroup)
     }
 
     override func tearDown() {

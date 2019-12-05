@@ -6,17 +6,24 @@ extension RedisConnection: ConnectionPoolItem {
     public var isClosed: Bool { return !self.isConnected }
 }
 
-extension ConnectionPool: RedisClient where Source.Connection: RedisConnection {
-    /// See `RediStack.RedisClient.eventLoop`
-    public var eventLoop: EventLoop { self.eventLoopGroup.next() }
+extension EventLoopConnectionPool where Source == RedisConnectionSource {
+    public func client() -> RedisClient {
+        _PoolRedisClient(pool: self)
+    }
+}
 
-    /// Sources a connection and forwards the command to the `RediStack.RedisClient` instance.
-    ///
-    /// See `RediStack.RedisClient.send(command:with:)`
-    public func send(
-        command: String,
-        with arguments: [RESPValue]
-    ) -> EventLoopFuture<RESPValue> {
-        return self.withConnection { $0.send(command: command, with: arguments) }
+private struct _PoolRedisClient {
+    let pool: EventLoopConnectionPool<RedisConnectionSource>
+}
+
+extension _PoolRedisClient: RedisClient {
+    var eventLoop: EventLoop {
+        self.pool.eventLoop
+    }
+    
+    func send(command: String, with arguments: [RESPValue]) -> EventLoopFuture<RESPValue> {
+        self.pool.withConnection {
+            $0.send(command: command, with: arguments)
+        }
     }
 }
