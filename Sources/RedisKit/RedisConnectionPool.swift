@@ -17,13 +17,17 @@ private struct _PoolRedisClient {
 }
 
 extension _PoolRedisClient: RedisClient {
+    var logger: Logger {
+        self.pool.logger
+    }
+
     var eventLoop: EventLoop {
         self.pool.eventLoop
     }
     
     func send(command: String, with arguments: [RESPValue]) -> EventLoopFuture<RESPValue> {
         self.pool.withConnection {
-            $0.send(command: command, with: arguments)
+            $0.send(command: command, with: arguments) //, logger: logger)
         }
     }
 }
