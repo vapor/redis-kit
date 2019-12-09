@@ -1,15 +1,18 @@
-// swift-tools-version:5.0
+// swift-tools-version:5.1
 import PackageDescription
 
 let package = Package(
     name: "redis-kit",
+    platforms: [
+       .macOS(.v10_14)
+    ],
     products: [
         .library(name: "RedisKit", targets: ["RedisKit"])
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
         .package(url: "https://gitlab.com/mordil/swift-redi-stack.git", from: "1.0.0-alpha.5"),
-        .package(url: "https://github.com/vapor/async-kit.git", .branch("master")),
+        .package(url: "https://github.com/vapor/async-kit.git", from: "1.0.0-beta.2"),
     ],
     targets: [
         .target(name: "RedisKit", dependencies: ["AsyncKit", "RediStack", "Logging"]),
