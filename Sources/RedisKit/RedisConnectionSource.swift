@@ -21,6 +21,8 @@ public final class RedisConnectionSource {
     }
 }
 
+// MARK: ConnectionPoolSource
+
 extension RedisConnectionSource: ConnectionPoolSource {
     /// Creates a new `RediStack.RedisConnection` using the `RedisConfiguration` provided during factory init.
     /// - Note: The client will receive a logger based on the one in the configuration, with an
@@ -69,4 +71,11 @@ extension RedisConnectionSource: ConnectionPoolSource {
                     .map { return client }
             }
     }
+}
+
+// MARK: ConnectionPoolItem
+
+extension RedisConnection: ConnectionPoolItem {
+    /// See `ConnectionPoolItem.isClosed`
+    public var isClosed: Bool { return !self.isConnected }
 }

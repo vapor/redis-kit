@@ -11,7 +11,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
-        .package(url: "https://gitlab.com/mordil/swift-redi-stack.git", from: "1.0.0-alpha.5"),
+        .package(url: "https://gitlab.com/mordil/swift-redi-stack.git", .branch("custom-logging")),
         .package(url: "https://github.com/vapor/async-kit.git", from: "1.0.0-beta.2"),
     ],
     targets: [
