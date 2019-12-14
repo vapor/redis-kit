@@ -24,10 +24,15 @@ extension _PoolRedisClient: RedisClient {
     var eventLoop: EventLoop {
         self.pool.eventLoop
     }
+
+    func setLogging(to logger: Logger) {
+        // cannot set logger
+    }
     
     func send(command: String, with arguments: [RESPValue]) -> EventLoopFuture<RESPValue> {
         self.pool.withConnection {
-            $0.send(command: command, with: arguments) //, logger: logger)
+            $0.setLogging(to: self.logger)
+            return $0.send(command: command, with: arguments)
         }
     }
 }
