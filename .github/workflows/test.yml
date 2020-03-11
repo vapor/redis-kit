@@ -2,9 +2,9 @@ name: test
 on:
 - pull_request
 jobs:
-  xenial-nightly:
+  xenial:
     container: 
-      image: swiftlang/swift:nightly-5.2-xenial
+      image: vapor/swift:5.2-xenial
     services:
       redis:
         image: redis
@@ -13,12 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - run: apt update && apt install libssl-dev zlib1g-dev -y && swift test --enable-test-discovery --sanitize=thread
-    env:
-      REDIS_HOSTNAME: redis
-  bionic-nightly:
+    - run: swift test --enable-test-discovery --sanitize=thread
+      env:
+        REDIS_HOSTNAME: redis
+  bionic:
     container: 
-      image: swiftlang/swift:nightly-5.2-bionic
+      image: vapor/swift:5.2-bionic
     services:
       redis:
         image: redis
@@ -27,6 +27,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - run: apt update && apt install libssl-dev zlib1g-dev -y && swift test --enable-test-discovery --sanitize=thread
-    env:
-      REDIS_HOSTNAME: redis
+    - run: swift test --enable-test-discovery --sanitize=thread
+      env:
+        REDIS_HOSTNAME: redis
