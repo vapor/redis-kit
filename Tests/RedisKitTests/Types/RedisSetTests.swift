@@ -37,8 +37,8 @@ final class RedisSetTests: RedisIntegrationTestCase {
     }
     
     func testMove() throws {
-        let firstSet = self.connection.makeSet(key: "\(#function)_1", type: Int.self)
-        let secondSet = self.connection.makeSet(key: "\(#function)_2", type: Int.self)
+        let firstSet = self.connection.makeSet(key: .init("\(#function)_1"), type: Int.self)
+        let secondSet = self.connection.makeSet(key: .init("\(#function)_2"), type: Int.self)
         
         _ = try firstSet.insert(3).wait()
         _ = try secondSet.insert(4).wait()

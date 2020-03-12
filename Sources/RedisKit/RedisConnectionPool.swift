@@ -17,13 +17,11 @@ private struct _PoolRedisClient {
 }
 
 extension _PoolRedisClient: RedisClient {
-    var logger: Logger {
-        self.pool.logger
-    }
+    var isConnected: Bool { true }
 
-    var eventLoop: EventLoop {
-        self.pool.eventLoop
-    }
+    var logger: Logger { self.pool.logger }
+
+    var eventLoop: EventLoop { self.pool.eventLoop }
 
     func setLogging(to logger: Logger) {
         // cannot set logger

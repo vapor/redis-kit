@@ -8,7 +8,7 @@ extension RedisClient {
     ///     - key: The Redis key to identify the Set.
     ///     - type: The Swift type representation of the elements in the set.
     /// - Returns: A `RedisSet` for repeatedly interacting with a specific Set value in Redis.
-    public func makeSet<Element>(key: String, type: Element.Type = Element.self) -> RedisSet<Element> {
+    public func makeSet<Element>(key: RedisKey, type: Element.Type = Element.self) -> RedisSet<Element> {
         return RedisSet(identifier: key, client: self)
     }
 }
@@ -41,16 +41,16 @@ extension RedisError {
 /// See [https://redis.io/topics/data-types-intro#sets](https://redis.io/topics/data-types-intro#sets)
 public struct RedisSet<Element> where Element: RESPValueConvertible {
     /// The key in Redis that this instance is a reference to.
-    public var identifier: String { return self.id }
+    public var identifier: RedisKey { return self.id }
     
-    private let id: String
+    private let id: RedisKey
     private let client: RedisClient
     
     /// Initializes a new reference to a specific Redis key that holds a Set value type.
     /// - Parameters:
     ///     - identifier: The key identifier to reference this set.
     ///     - client: The `RediStack.RedisClient` to use for making calls to Redis.
-    public init(identifier: String, client: RedisClient) {
+    public init(identifier: RedisKey, client: RedisClient) {
         self.id = identifier
         self.client = client
     }
