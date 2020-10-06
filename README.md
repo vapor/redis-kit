@@ -18,3 +18,5 @@
         <img src="http://img.shields.io/badge/swift-5.0-brightgreen.svg" alt="Swift 5.0">
     </a>
 </p>
+
+> :warning: This project is now obsolete. The Redis specific code has been upstreamed to [**RediStack**](https://gitlab.com/Mordil/RediStack) while the Vapor specific code has been downstreamed to [**Vapor/Redis**](https://github.com/vapor/redis).
